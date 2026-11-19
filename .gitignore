@@ -1,0 +1,51 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+DerivedData/
+.build/
+
+# Swift Package Manager
+.packages/
+Package.resolved
+
+# Build products
+build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Playgrounds
+.timeline
+.playground/
+
+# App signing and secrets
+*.mobileprovision
+*.p12
+*.cer
+
+# IDE
+.idea/
+.vscode/
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# Environment and local configuration
+.env
+.env.*
+!.env.example
