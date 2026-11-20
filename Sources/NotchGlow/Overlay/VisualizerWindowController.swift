@@ -37,6 +37,8 @@ final class VisualizerWindowController {
             let entry = entries[id] ?? makeEntry(id)
             maxNotch = max(maxNotch, DisplayManager.notchHalfWidth(for: screen))
             let frame = DisplayManager.overlayFrame(for: screen, size: size,
+                                                    bandHeight: CGFloat(max(settings.config.height, 8)),
+                                                    placement: app.placement,
                                                     verticalOffset: CGFloat(app.verticalOffset))
             if entry.panel.frame != frame { entry.panel.setFrame(frame, display: false) }
             if !entry.panel.isVisible { entry.panel.orderFrontRegardless() }
@@ -60,7 +62,8 @@ final class VisualizerWindowController {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
-        panel.level = .statusBar                       // above the menu bar
+        // Above the menu bar and its status items (menu bar = mainMenu level).
+        panel.level = NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue + 3)
         panel.ignoresMouseEvents = true                // never blocks clicks
         panel.isFloatingPanel = true
         panel.hidesOnDeactivate = false
