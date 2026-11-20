@@ -62,9 +62,9 @@ struct MenuPopoverView: View {
 
             Divider()
 
-            Text("POSITION").font(.caption2).foregroundStyle(.secondary)
-            Picker("Position", selection: settings.appBinding(\.placement)) {
-                ForEach(OverlayPlacement.allCases) { Text($0.title).tag($0) }
+            Text("LAYER").font(.caption2).foregroundStyle(.secondary)
+            Picker("Layer", selection: settings.appBinding(\.layer)) {
+                ForEach(OverlayLayer.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
