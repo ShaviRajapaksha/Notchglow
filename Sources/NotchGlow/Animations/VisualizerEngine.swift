@@ -42,7 +42,9 @@ final class VisualizerEngine {
 
     init(config: AnimationConfiguration) { self.config = config }
 
-    private var effectiveClearance: CGFloat { max(config.clearance, externalClearance) }
+    private var effectiveClearance: CGFloat {
+        config.connectSides ? 0 : max(config.clearance, externalClearance)
+    }
     private var hasViews: Bool { views.count > 0 }
 
     // MARK: Views
