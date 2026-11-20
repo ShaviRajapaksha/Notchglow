@@ -17,20 +17,37 @@ final class EnergyPulseRenderer: StyleRenderer {
 
         let basePath = CGMutablePath()
         let wavePath = CGMutablePath()
-        for side in Side.allCases {
+        let lenL = rc.length(.left), lenR = rc.length(.right)
+        let connected = c < 0.5 && lenL > 1 && lenR > 1
+
+        func wavePoints(_ side: Side) -> [CGPoint] {
             let len = rc.length(side)
-            guard len > 1 else { continue }
-            basePath.move(to: CGPoint(x: side.sign * c, y: 0))
-            basePath.addLine(to: CGPoint(x: side.sign * (c + len), y: 0))
-            let off: CGFloat = (side == .right && !cfg.symmetrical) ? 1.9 : 0
-            var d: CGFloat = 0
-            var first = true
-            while d <= len {
+            guard len > 1 else { return [] }
+            let asym = !cfg.symmetrical && side == .right
+            return stride(from: CGFloat(0), through: len, by: 3).map { d in
                 let t = min(1, d / len)
+                let off: CGFloat = asym ? 1.9 * min(1, d / 40) : 0
                 let y = sin(d * 0.05 - st.phase * 1.2 + off) * H * 0.5 * drive * (1 - 0.6 * t)
-                let p = CGPoint(x: side.sign * (c + d), y: y)
-                if first { wavePath.move(to: p); first = false } else { wavePath.addLine(to: p) }
-                d += 3
+                return CGPoint(x: side.sign * (c + d), y: y)
+            }
+        }
+        func addPoints(_ pts: [CGPoint]) {
+            guard let f = pts.first else { return }
+            wavePath.move(to: f)
+            for p in pts.dropFirst() { wavePath.addLine(to: p) }
+        }
+
+        if connected {
+            basePath.move(to: CGPoint(x: -lenL, y: 0))
+            basePath.addLine(to: CGPoint(x: lenR, y: 0))
+            addPoints(Array(wavePoints(.left).reversed()) + Array(wavePoints(.right).dropFirst()))
+        } else {
+            for side in Side.allCases {
+                let len = rc.length(side)
+                guard len > 1 else { continue }
+                basePath.move(to: CGPoint(x: side.sign * c, y: 0))
+                basePath.addLine(to: CGPoint(x: side.sign * (c + len), y: 0))
+                addPoints(wavePoints(side))
             }
         }
 
