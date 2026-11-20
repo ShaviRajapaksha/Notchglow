@@ -35,19 +35,11 @@ enum DisplayManager {
         return 0
     }
 
-    /// Window frame, horizontally centered on the screen.
-    /// - overMenuBar: the animation band is vertically centered ON the menu bar.
-    /// - belowMenuBar: the top edge of the band sits right under the menu bar.
-    static func overlayFrame(for screen: NSScreen, size: CGSize, bandHeight: CGFloat,
-                             placement: OverlayPlacement, verticalOffset: CGFloat) -> NSRect {
+    /// Window frame: horizontally centered on the screen, vertically centered on the menu bar.
+    static func overlayFrame(for screen: NSScreen, size: CGSize, verticalOffset: CGFloat) -> NSRect {
         let bar = menuBarHeight(for: screen)
         let x = screen.frame.midX - size.width / 2
-        let centerY: CGFloat
-        switch placement {
-        case .overMenuBar: centerY = screen.frame.maxY - bar / 2
-        case .belowMenuBar: centerY = screen.frame.maxY - bar - bandHeight / 2
-        }
-        let y = centerY - size.height / 2 - verticalOffset
+        let y = screen.frame.maxY - bar / 2 - size.height / 2 - verticalOffset
         return NSRect(x: x.rounded(), y: y.rounded(), width: size.width, height: size.height)
     }
 }
