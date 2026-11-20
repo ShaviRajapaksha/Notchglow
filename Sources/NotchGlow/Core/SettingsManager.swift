@@ -16,15 +16,22 @@ final class SettingsManager: ObservableObject {
     private var saveWork: DispatchWorkItem?
 
     init() {
-        var c = Self.load(AnimationConfiguration.self, key: Keys.config) ?? AnimationConfiguration()
+        var c = Self.load(AnimationConfiguration.self, key: Keys.config, defaults: AnimationConfiguration()) ?? AnimationConfiguration()
         c.normalize()
         self.config = c
-        self.app = Self.load(AppSettings.self, key: Keys.app) ?? AppSettings()
+        self.app = Self.load(AppSettings.self, key: Keys.app, defaults: AppSettings()) ?? AppSettings()
     }
 
-    private static func load<T: Decodable>(_ type: T.Type, key: String) -> T? {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
-        return try? JSONDecoder().decode(T.self, from: data)
+    /// Decodes saved JSON on top of the defaults, so fields added in newer versions never wipe saved settings.
+    private static func load<T: Codable>(_ type: T.Type, key: String, defaults d: T) -> T? {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let saved = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+              let defData = try? JSONEncoder().encode(d),
+              var merged = (try? JSONSerialization.jsonObject(with: defData)) as? [String: Any],
+              !saved.isEmpty else { return nil }
+        for (k, v) in saved { merged[k] = v }
+        guard let out = try? JSONSerialization.data(withJSONObject: merged) else { return nil }
+        return try? JSONDecoder().decode(T.self, from: out)
     }
 
     private func scheduleSave() {
