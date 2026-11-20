@@ -23,6 +23,7 @@ struct AnimationConfiguration: Codable, Equatable {
     var leftExpansion: Double = 100      // % of half-width
     var rightExpansion: Double = 100     // % of half-width
     var centerSize: Double = 0           // empty gap kept clear at the center
+    var connectSides: Bool = true        // one continuous effect through the center (ignores the gap/notch)
 
     // Appearance
     var colorMode: ColorMode = .multiColor
