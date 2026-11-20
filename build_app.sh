@@ -19,5 +19,5 @@ cp Resources/Info.plist "$APP/Contents/Info.plist"
 [ -f Resources/AppIcon.icns ] && cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns" || true
 
 codesign --force --deep --sign "$IDENTITY" "$APP"
-echo " Built $APP"
+echo "✅ Built $APP"
 echo "   Run it with:  open $APP"
