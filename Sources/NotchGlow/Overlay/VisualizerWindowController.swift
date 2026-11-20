@@ -37,9 +37,9 @@ final class VisualizerWindowController {
             let entry = entries[id] ?? makeEntry(id)
             maxNotch = max(maxNotch, DisplayManager.notchHalfWidth(for: screen))
             let frame = DisplayManager.overlayFrame(for: screen, size: size,
-                                                    bandHeight: CGFloat(max(settings.config.height, 8)),
-                                                    placement: app.placement,
                                                     verticalOffset: CGFloat(app.verticalOffset))
+            let level = Self.windowLevel(for: app.layer)
+            if entry.panel.level != level { entry.panel.level = level }
             if entry.panel.frame != frame { entry.panel.setFrame(frame, display: false) }
             if !entry.panel.isVisible { entry.panel.orderFrontRegardless() }
         }
@@ -55,6 +55,17 @@ final class VisualizerWindowController {
         rebuild()
     }
 
+    /// Above: higher than the menu bar background, its icons and menus (drawn on top of the blur).
+    /// Beneath: just below the menu bar window, so the menu bar's blur/background is drawn over the effect.
+    private static func windowLevel(for layer: OverlayLayer) -> NSWindow.Level {
+        switch layer {
+        case .aboveMenuBar:
+            return NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.popUpMenuWindow)) + 1)
+        case .beneathMenuBar:
+            return NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue - 1)
+        }
+    }
+
     private func makeEntry(_ id: CGDirectDisplayID) -> Entry {
         let panel = OverlayPanel(contentRect: .zero,
                                  styleMask: [.borderless, .nonactivatingPanel],
@@ -62,8 +73,7 @@ final class VisualizerWindowController {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
-        // Above the menu bar and its status items (menu bar = mainMenu level).
-        panel.level = NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue + 3)
+        panel.level = Self.windowLevel(for: settings.app.layer)
         panel.ignoresMouseEvents = true                // never blocks clicks
         panel.isFloatingPanel = true
         panel.hidesOnDeactivate = false
