@@ -121,13 +121,13 @@ struct AppearancePane: View {
                 SliderRow(title: "Glow intensity", value: settings.binding(\.glow), range: 0...1, decimals: 2)
                 SliderRow(title: "Blur", value: settings.binding(\.blur), range: 0...10, step: 0.5, unit: " pt")
                 SliderRow(title: "Corner radius", value: settings.binding(\.cornerRadius), range: 0...20, step: 0.5,
-                          unit: " pt", note: "Spikes, bars, digital rain segments and pulse trails.")
+                          unit: " pt", note: "Spikes, bars, LED dots and pulse trails.")
                 SliderRow(title: "Line thickness", value: settings.binding(\.lineThickness), range: 1...10, step: 0.5,
                           unit: " pt", note: "Line width / spike & bar width / particle size.")
             }
             Card("Elements") {
                 SliderRow(title: "Spike / bar / column count", value: settings.intBinding(\.spikeCount), range: 6...80,
-                          step: 1, note: "Per side. Used by Spike Wave, Equalizer and Digital Rain.")
+                          step: 1, note: "Per side. Used by Spike Wave, Needle Spikes, Equalizer and LED Meter.")
                 SliderRow(title: "Spike height", value: settings.binding(\.spikeHeight), range: 0.2...1, decimals: 2,
                           note: "Fraction of the overall height that elements may reach.")
                 SliderRow(title: "Particle count", value: settings.intBinding(\.particleCount), range: 10...300,
@@ -158,8 +158,12 @@ struct DimensionsPane: View {
                           unit: " %", note: "Same for the right side. Set different values for a lopsided effect.")
             }
             Card("Center") {
+                Toggle("Connect left and right sides", isOn: settings.binding(\.connectSides))
+                Text("Draws one continuous effect through the center. Turn off to leave a gap (for example around the notch).")
+                    .font(.caption).foregroundStyle(.secondary)
                 SliderRow(title: "Center size", value: settings.binding(\.centerSize), range: 0...400, step: 2, unit: " pt",
-                          note: "Width of the empty gap at the center where the animation starts. Useful to clear the notch (also see General → Keep the camera notch area clear).")
+                          note: "Width of the empty gap at the center. Only used when the sides are not connected.")
+                    .disabled(settings.config.connectSides)
             }
         }
     }
