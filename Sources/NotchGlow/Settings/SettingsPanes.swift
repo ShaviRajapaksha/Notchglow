@@ -20,10 +20,12 @@ struct GeneralPane: View {
                 Picker("Show on", selection: settings.appBinding(\.displayMode)) {
                     ForEach(DisplayMode.allCases) { Text($0.title).tag($0) }
                 }
-                Picker("Position", selection: settings.appBinding(\.placement)) {
-                    ForEach(OverlayPlacement.allCases) { Text($0.title).tag($0) }
+                Picker("Layer", selection: settings.appBinding(\.layer)) {
+                    ForEach(OverlayLayer.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
+                Text("Above draws the effect on top of the menu bar, including its blurred background. Beneath draws it behind the menu bar, so the blur is applied over the effect.")
+                    .font(.caption).foregroundStyle(.secondary)
                 Toggle("Keep the camera notch area clear", isOn: settings.appBinding(\.avoidNotch))
                 SliderRow(title: "Vertical offset", value: settings.appBinding(\.verticalOffset),
                           range: -30...60, step: 1, unit: " pt",
