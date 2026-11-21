@@ -27,10 +27,13 @@ final class AudioWaveRenderer: StyleRenderer {
                 let t = min(1, d / len)
                 let env = pow(1 - t, 0.55)
                 let ripple = rc.state.rippleInfluence(at: t, side: side, speed: speed) * k
-                let a = H * min(1, 0.10 + 0.9 * min(1.1, amp + ripple * 0.8)) * env
-                var ph = phase
+                let level: CGFloat = min(1.1, amp + ripple * 0.8)
+                let a: CGFloat = H * min(1, 0.10 + 0.9 * level) * env
+                var ph: CGFloat = phase
                 if asym && side == .right { ph += (phase * 0.13 + 2.1) * min(1, d / 40) }
-                let w = (1 - mix) * sin(d * 0.045 - ph) + mix * sin(d * 0.11 - ph * 1.37 + 1.3)
+                let w1: CGFloat = sin(d * 0.045 - ph)
+                let w2: CGFloat = sin(d * 0.11 - ph * 1.37 + 1.3)
+                let w: CGFloat = (1 - mix) * w1 + mix * w2
                 return CGPoint(x: side.sign * (rc.clearance + d), y: a * w)
             }
         }
