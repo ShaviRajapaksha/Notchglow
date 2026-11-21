@@ -41,8 +41,11 @@ final class HeartbeatRenderer: StyleRenderer {
                     let u = (d - f * len) / half
                     if abs(u) < 1.3 { y += complex(u) * w * max(0, 1 - f * 0.5) }
                 }
-                y += sin(d * 0.2 - st.phase * 3) * 0.04 * min(1, st.drive * k)   // faint resting tremor
-                return CGPoint(x: side.sign * (rc.clearance + d), y: clamp(y, -1.2, 1.2) * H * 0.95)
+                let tremorArg: CGFloat = d * 0.2 - st.phase * 3
+                let tremorAmp: CGFloat = 0.04 * min(1, st.drive * k)
+                y += sin(tremorArg) * tremorAmp                       // faint resting tremor
+                let clamped: CGFloat = clamp(y, -1.2, 1.2)
+                return CGPoint(x: side.sign * (rc.clearance + d), y: clamped * H * 0.95)
             }
         }
 
