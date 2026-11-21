@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum SettingsPane: String, CaseIterable, Identifiable {
-    case general, styles, appearance, dimensions, behavior, permissions, about
+    case general, styles, appearance, dimensions, behavior, sound, permissions, about
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -10,6 +10,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .appearance: return "Appearance"
         case .dimensions: return "Dimensions"
         case .behavior: return "Behavior"
+        case .sound: return "Sound & Music"
         case .permissions: return "Permissions"
         case .about: return "About"
         }
@@ -21,6 +22,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .appearance: return "paintpalette"
         case .dimensions: return "ruler"
         case .behavior: return "slider.horizontal.3"
+        case .sound: return "music.note"
         case .permissions: return "lock.shield"
         case .about: return "info.circle"
         }
@@ -30,13 +32,15 @@ enum SettingsPane: String, CaseIterable, Identifiable {
 struct SettingsRootView: View {
     @ObservedObject var settings: SettingsManager
     @ObservedObject var permissions: PermissionsManager
+    @ObservedObject var audioStatus: AudioStatus
     let previewEngine: VisualizerEngine
     @State private var selection: SettingsPane
 
-    init(settings: SettingsManager, permissions: PermissionsManager,
+    init(settings: SettingsManager, permissions: PermissionsManager, audioStatus: AudioStatus,
          previewEngine: VisualizerEngine, initialPane: SettingsPane = .general) {
         self.settings = settings
         self.permissions = permissions
+        self.audioStatus = audioStatus
         self.previewEngine = previewEngine
         _selection = State(initialValue: initialPane)
     }
@@ -72,6 +76,7 @@ struct SettingsRootView: View {
         case .appearance: AppearancePane(settings: settings)
         case .dimensions: DimensionsPane(settings: settings)
         case .behavior: BehaviorPane(settings: settings)
+        case .sound: SoundPane(settings: settings, permissions: permissions, audioStatus: audioStatus)
         case .permissions: PermissionsPane(permissions: permissions)
         case .about: AboutPane()
         }
