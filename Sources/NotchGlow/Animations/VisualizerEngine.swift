@@ -73,6 +73,16 @@ final class VisualizerEngine {
         wake()
     }
 
+    func registerAudio(level: Float, bands: [Float]) {
+        guard isEnabled, hasViews else { return }
+        let geo = Geometry.make(config, clearance: effectiveClearance)
+        let beat = state.feedAudio(level: CGFloat(level), bands: bands.map { CGFloat($0) }, cfg: config)
+        if let strength = beat {
+            renderer.keystroke(strength: strength, state: state, cfg: config, geo: geo)   // beats act like keystrokes
+        }
+        wake()
+    }
+
     // MARK: Loop
     private func wake() {
         guard isEnabled, hasViews else { return }
