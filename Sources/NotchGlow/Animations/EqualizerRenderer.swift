@@ -55,7 +55,12 @@ final class EqualizerRenderer: StyleRenderer {
                 if cfg.symmetrical { ambient[1] = ambient[0] } else { for i in 0..<n { ambient[1][i] = rnd(0.1, 1) } }
             }
         } else {
-            for s in 0..<2 { for i in 0..<n { ambient[s][i] = 0.55 + 0.45 * abs(sin(CGFloat(i) * 0.6 + CGFloat(s) * 1.3)) } }
+            for s in 0..<2 {
+                for i in 0..<n {
+                    let arg: CGFloat = CGFloat(i) * 0.6 + CGFloat(s) * 1.3
+                    ambient[s][i] = 0.55 + 0.45 * abs(sin(arg))
+                }
+            }
         }
 
         let drive = state.drive * CGFloat(cfg.intensity)
@@ -63,7 +68,10 @@ final class EqualizerRenderer: StyleRenderer {
             for i in 0..<n {
                 targets[s][i] *= exp(-dt * decay)
                 let t = (CGFloat(i) + 0.5) / CGFloat(n)
-                let target = min(1, max(targets[s][i], drive * 0.45 * ambient[s][i])) * (1 - 0.5 * t)
+                let spec: CGFloat = state.spectrum(at: t) * CGFloat(cfg.intensity)
+                let live: CGFloat = state.hasSpectrum ? spec : drive * 0.45 * ambient[s][i]
+                let base: CGFloat = max(targets[s][i], live)
+                let target: CGFloat = min(1, base) * (1 - 0.5 * t)
                 let cur = levels[s][i]
                 levels[s][i] = cur + (target - cur) * smoothing((target > cur ? 38 : 11) * speed, dt)
                 peaks[s][i] = max(levels[s][i], peaks[s][i] - dt * 0.7 * speed)
