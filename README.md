@@ -3,7 +3,13 @@
 Dynamic animations at the top-center of your screen, aligned with the menu bar, that react to typing in any app.
 Native Swift · SwiftUI · AppKit · Core Graphics. Requires macOS 13+ and the Xcode command line tools (Swift 5.9+).
 
-<img width="1600" height="1000" alt="WhatsApp Image 2026-11-20 at 09 40 10" src="https://github.com/user-attachments/assets/95c74a76-66fd-4506-99a1-13df05a78e02" />
+<!-- <img width="1600" height="1000" alt="WhatsApp Image 2026-11-20 at 09 40 10" src="https://github.com/user-attachments/assets/95c74a76-66fd-4506-99a1-13df05a78e02" /> -->
+
+
+
+
+https://github.com/user-attachments/assets/d6185ba9-53c7-4887-a159-7f9017d399c7
+
 
 ## Build & run
 
