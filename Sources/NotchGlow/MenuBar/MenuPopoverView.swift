@@ -17,7 +17,7 @@ struct MenuPopoverView: View {
                     .toggleStyle(.switch).labelsHidden()
             }
 
-            if !permissions.isSufficient {
+            if settings.app.reactToTyping && !permissions.isSufficient {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
                     VStack(alignment: .leading, spacing: 6) {
@@ -30,7 +30,11 @@ struct MenuPopoverView: View {
                 .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.orange.opacity(0.12)))
             }
 
-            Toggle("Pause typing detection", isOn: settings.appBinding(\.detectionPaused))
+            Toggle("Pause all detection", isOn: settings.appBinding(\.detectionPaused))
+                .disabled(!settings.app.isEnabled)
+            Toggle("React to typing", isOn: settings.appBinding(\.reactToTyping))
+                .disabled(!settings.app.isEnabled)
+            Toggle("React to music & system sound", isOn: settings.appBinding(\.reactToSystemAudio))
                 .disabled(!settings.app.isEnabled)
 
             Divider()
