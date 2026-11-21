@@ -1,18 +1,22 @@
 import AppKit
 import Combine
 
-/// Wires everything together: settings -> engines/overlay, permissions -> keyboard monitor.
+/// Wires everything together: settings -> engines/overlay, permissions -> input monitors.
 final class AppEnvironment {
     static let shared = AppEnvironment()
 
     let settings: SettingsManager
     let permissions: PermissionsManager
     let monitor: KeyboardActivityMonitor
+    let systemAudio: SystemAudioMonitor
+    let microphone: MicrophoneMonitor
+    let audioStatus: AudioStatus
     let overlayEngine: VisualizerEngine
     let previewEngine: VisualizerEngine      // drives the live preview in Settings
     let overlay: VisualizerWindowController
 
     private var bag = Set<AnyCancellable>()
+    private var askedScreenRecording = false
 
     private init() {
         let s = SettingsManager()
@@ -21,6 +25,9 @@ final class AppEnvironment {
         settings = s
         permissions = PermissionsManager()
         monitor = KeyboardActivityMonitor()
+        systemAudio = SystemAudioMonitor()
+        microphone = MicrophoneMonitor()
+        audioStatus = AudioStatus()
         overlayEngine = oe
         previewEngine = pe
         overlay = VisualizerWindowController(engine: oe, settings: s)
@@ -29,6 +36,23 @@ final class AppEnvironment {
     func start() {
         // Only "a key was pressed" is forwarded; never which key.
         monitor.onKeystroke = { [weak self] in self?.handleKeystroke() }
+
+        // Audio is analyzed in memory (loudness + spectrum) and discarded; nothing is stored.
+        let audioHandler: (Float, [Float]) -> Void = { [weak self] level, bands in
+            self?.overlayEngine.registerAudio(level: level, bands: bands)
+            self?.previewEngine.registerAudio(level: level, bands: bands)
+        }
+        systemAudio.onAudio = audioHandler
+        microphone.onAudio = audioHandler
+        systemAudio.onStatus = { [weak self] running, error in
+            DispatchQueue.main.async {
+                self?.audioStatus.systemRunning = running
+                self?.audioStatus.systemError = error
+            }
+        }
+        microphone.onStatus = { [weak self] running in
+            DispatchQueue.main.async { self?.audioStatus.micRunning = running }
+        }
 
         settings.$config
             .receive(on: DispatchQueue.main)
@@ -48,9 +72,8 @@ final class AppEnvironment {
             }
             .store(in: &bag)
 
-        permissions.$inputMonitoringGranted
-            .combineLatest(permissions.$accessibilityGranted)
-            .receive(on: DispatchQueue.main)
+        permissions.objectWillChange
+            .receive(on: DispatchQueue.main)          // deferred, so values are up to date
             .sink { [weak self] _ in self?.applyState() }
             .store(in: &bag)
 
@@ -66,15 +89,31 @@ final class AppEnvironment {
 
     func stop() {
         monitor.stop()
+        systemAudio.stop()
+        microphone.stop()
         settings.flush()
     }
 
-    /// Start/stop the keyboard monitor and overlay according to settings + permissions.
+    /// Start/stop every input according to settings + permissions.
     func applyState() {
         let a = settings.app
         overlayEngine.isEnabled = a.isEnabled
-        let shouldMonitor = a.isEnabled && !a.detectionPaused && permissions.isSufficient
-        if shouldMonitor { monitor.start() } else { monitor.stop() }
+        let live = a.isEnabled && !a.detectionPaused
+
+        // Typing
+        if live && a.reactToTyping && permissions.isSufficient { monitor.start() } else { monitor.stop() }
+
+        // Laptop music / system sound
+        let wantSystem = live && a.reactToSystemAudio
+        permissions.monitorsScreenRecording = wantSystem
+        if wantSystem && !permissions.screenRecordingGranted && !askedScreenRecording {
+            askedScreenRecording = true
+            permissions.requestScreenRecording()
+        }
+        if wantSystem && permissions.screenRecordingGranted { systemAudio.start() } else { systemAudio.stop() }
+
+        // Microphone
+        if live && a.reactToMicrophone { microphone.start() } else { microphone.stop() }
     }
 
     private func handleKeystroke() {
