@@ -37,7 +37,8 @@ final class ParticleBurstRenderer: StyleRenderer {
     }
 
     func keystroke(strength: CGFloat, state: VisualizerState, cfg: AnimationConfiguration, geo: Geometry) {
-        let count = clamp(Int(CGFloat(cfg.particleCount) * 0.07 * (0.5 + strength) * CGFloat(cfg.intensity)), 2, 40)
+        let raw: CGFloat = CGFloat(cfg.particleCount) * 0.07 * (0.5 + strength) * CGFloat(cfg.intensity)
+        let count: Int = clamp(Int(raw), 2, 40)
         for _ in 0..<count { spawnPair(state: state, cfg: cfg, geo: geo) }
     }
 
