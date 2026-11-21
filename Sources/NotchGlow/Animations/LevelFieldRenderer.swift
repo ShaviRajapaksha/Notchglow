@@ -38,7 +38,10 @@ class LevelFieldRenderer: StyleRenderer {
         } else {
             for s in 0..<2 {
                 let off: CGFloat = (s == 1 && !cfg.symmetrical) ? 1.7 : 0
-                for i in 0..<n { seeds[s][i] = 0.55 + 0.45 * abs(sin(CGFloat(i) * 0.9 + off)) }
+                for i in 0..<n {
+                    let w: CGFloat = abs(sin(CGFloat(i) * 0.9 + off))
+                    seeds[s][i] = 0.55 + 0.45 * w
+                }
             }
         }
 
@@ -50,8 +53,11 @@ class LevelFieldRenderer: StyleRenderer {
                 let seed = seeds[s][i]
                 let ripple = state.rippleInfluence(at: t, side: side, speed: speed) * k
                 let falloff = 1 - 0.45 * t
-                let raw = (drive * 0.5 * seed + ripple * (0.6 + 0.4 * seed)) * falloff * shape(i, n)
-                let target = min(1, raw)
+                let spec: CGFloat = state.spectrum(at: t) * k
+                let ambient: CGFloat = state.hasSpectrum ? 0 : drive * 0.5 * seed
+                let kick: CGFloat = ripple * (0.6 + 0.4 * seed)
+                let raw: CGFloat = (ambient + kick + spec) * falloff * shape(i, n)
+                let target: CGFloat = min(1, raw)
                 let cur = levels[s][i]
                 levels[s][i] = cur + (target - cur) * smoothing((target > cur ? 30 : 10) * speed, dt)
             }
