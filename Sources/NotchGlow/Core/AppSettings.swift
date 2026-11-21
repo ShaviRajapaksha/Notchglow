@@ -28,6 +28,9 @@ enum OverlayLayer: String, Codable, CaseIterable, Identifiable {
 struct AppSettings: Codable, Equatable {
     var isEnabled: Bool = true
     var detectionPaused: Bool = false
+    var reactToTyping: Bool = true
+    var reactToSystemAudio: Bool = false      // laptop music & system sound
+    var reactToMicrophone: Bool = false       // sound around you
     var displayMode: DisplayMode = .allDisplays
     var layer: OverlayLayer = .aboveMenuBar
     var avoidNotch: Bool = true
@@ -41,6 +44,9 @@ struct AppSettings: Codable, Equatable {
         let d = AppSettings()
         isEnabled = try c.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? d.isEnabled
         detectionPaused = try c.decodeIfPresent(Bool.self, forKey: .detectionPaused) ?? d.detectionPaused
+        reactToTyping = try c.decodeIfPresent(Bool.self, forKey: .reactToTyping) ?? d.reactToTyping
+        reactToSystemAudio = try c.decodeIfPresent(Bool.self, forKey: .reactToSystemAudio) ?? d.reactToSystemAudio
+        reactToMicrophone = try c.decodeIfPresent(Bool.self, forKey: .reactToMicrophone) ?? d.reactToMicrophone
         displayMode = try c.decodeIfPresent(DisplayMode.self, forKey: .displayMode) ?? d.displayMode
         layer = try c.decodeIfPresent(OverlayLayer.self, forKey: .layer) ?? d.layer
         avoidNotch = try c.decodeIfPresent(Bool.self, forKey: .avoidNotch) ?? d.avoidNotch
