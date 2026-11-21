@@ -183,7 +183,7 @@ struct BehaviorPane: View {
             }
             Card("Reaction") {
                 SliderRow(title: "Reaction sensitivity", value: settings.binding(\.sensitivity),
-                          range: 0.3...3, decimals: 2, unit: "×", note: "How strongly each keystroke registers.")
+                          range: 0.3...3, decimals: 2, unit: "×", note: "How strongly each keystroke (and music or sound) registers.")
                 SliderRow(title: "Typing intensity", value: settings.binding(\.typingIntensity),
                           range: 0.3...2, decimals: 2, unit: "×", note: "How strongly typing speed raises the energy.")
                 SliderRow(title: "Animation frequency", value: settings.binding(\.frequency),
@@ -198,6 +198,75 @@ struct BehaviorPane: View {
             }
             Card {
                 Button("Reset Animation Settings") { settings.resetAnimation() }
+            }
+        }
+    }
+}
+
+// MARK: Sound & Music
+struct SoundPane: View {
+    @ObservedObject var settings: SettingsManager
+    @ObservedObject var permissions: PermissionsManager
+    @ObservedObject var audioStatus: AudioStatus
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Card("React to") {
+                Toggle("Typing", isOn: settings.appBinding(\.reactToTyping))
+                Toggle("Laptop music & system sound", isOn: settings.appBinding(\.reactToSystemAudio))
+                Text("Everything your Mac plays: Apple Music, Spotify, YouTube, videos and more.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Toggle("Microphone (sound around you)", isOn: settings.appBinding(\.reactToMicrophone))
+                Text("You can combine sources. Turn on only what you want.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
+            if settings.app.reactToSystemAudio {
+                Card("Laptop music & system sound") {
+                    PermissionRow(
+                        title: "Screen & System Audio Recording",
+                        detail: "macOS uses this permission for system audio capture. Only the sound is analyzed; no screen content is recorded, stored or shown.",
+                        granted: permissions.screenRecordingGranted,
+                        request: permissions.requestScreenRecording,
+                        openSettings: permissions.openScreenRecordingSettings)
+                    if let error = audioStatus.systemError {
+                        Text(error).font(.caption).foregroundStyle(.red)
+                    } else if audioStatus.systemRunning {
+                        Label("Listening to system sound", systemImage: "waveform").foregroundStyle(.green).font(.callout)
+                    }
+                    if !permissions.screenRecordingGranted {
+                        Text("After allowing it in System Settings, you may need to relaunch the app once.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Button("Relaunch App") { permissions.relaunch() }.controlSize(.small)
+                    }
+                }
+            }
+
+            if settings.app.reactToMicrophone {
+                Card("Microphone") {
+                    PermissionRow(
+                        title: "Microphone",
+                        detail: "Lets the visualizer react to sound picked up by your Mac's microphone. Audio is never recorded or stored.",
+                        granted: permissions.microphoneGranted,
+                        request: permissions.requestMicrophone,
+                        openSettings: permissions.openMicrophoneSettings)
+                    if audioStatus.micRunning {
+                        Label("Listening to the microphone", systemImage: "mic.fill").foregroundStyle(.green).font(.callout)
+                    }
+                }
+            }
+
+            Card("How it reacts") {
+                Text("Loudness drives the energy, beats trigger ripples and bursts, and Spike Wave, Needle Spikes, Equalizer and LED Meter show a live frequency spectrum, with bass in the center and treble toward the edges. Tune it with Reaction sensitivity in Behavior. The live preview above reacts to sound too.")
+                    .font(.callout).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Card {
+                Label("Sound stays private", systemImage: "lock.shield.fill").font(.headline)
+                Text("Audio is analyzed in memory to measure loudness and frequencies, then discarded. Nothing is recorded, saved or sent anywhere.")
+                    .font(.callout).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
