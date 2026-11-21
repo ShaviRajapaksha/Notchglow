@@ -10,7 +10,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         env.permissions.refresh()
 
         let root = SettingsRootView(settings: env.settings, permissions: env.permissions,
-                                    previewEngine: env.previewEngine, initialPane: pane ?? .general)
+                                    audioStatus: env.audioStatus, previewEngine: env.previewEngine, initialPane: pane ?? .general)
         let hosting = NSHostingController(rootView: root)
 
         if window == nil {
