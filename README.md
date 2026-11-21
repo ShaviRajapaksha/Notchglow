@@ -16,6 +16,14 @@
 
 Say hello to **NotchGlow**, the coolest way to make your Mac's menu bar and notch the star of the show! Instead of a static strip of icons, the top of your screen lights up with a vibrant, fully customizable visualizer that dances to your **music**, your **sound**, and your **typing**. Pick from 10 animation styles, tune every dimension, color and glow, and watch it react in real time. It's a native menu-bar app, lightweight, and it only renders while something is actually moving.
 
+<p align="center">
+  <img
+    src="assets/notchglow.gif"
+    alt="NotchGlow demonstration"
+    width="100%"
+  />
+</p>
+
 ---
 
 ## ✨ Features
