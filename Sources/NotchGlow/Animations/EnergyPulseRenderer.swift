@@ -27,7 +27,9 @@ final class EnergyPulseRenderer: StyleRenderer {
             return stride(from: CGFloat(0), through: len, by: 3).map { d in
                 let t = min(1, d / len)
                 let off: CGFloat = asym ? 1.9 * min(1, d / 40) : 0
-                let y = sin(d * 0.05 - st.phase * 1.2 + off) * H * 0.5 * drive * (1 - 0.6 * t)
+                let arg: CGFloat = d * 0.05 - st.phase * 1.2 + off
+                let scale: CGFloat = H * 0.5 * drive * (1 - 0.6 * t)
+                let y: CGFloat = sin(arg) * scale
                 return CGPoint(x: side.sign * (c + d), y: y)
             }
         }
