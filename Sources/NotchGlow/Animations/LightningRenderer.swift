@@ -12,7 +12,7 @@ final class LightningRenderer: StyleRenderer {
     func reset() { seeds = [[], []]; previous = [[], []]; amp = 0 }
 
     private func roll() -> [CGFloat] { (0..<count).map { _ in rnd(-1, 1) } }
-        private func fixed() -> [CGFloat] {
+    private func fixed() -> [CGFloat] {
         var out: [CGFloat] = []
         for i in 0..<count {
             let sign: CGFloat = (i % 2 == 0) ? 1 : -1
@@ -21,6 +21,7 @@ final class LightningRenderer: StyleRenderer {
         }
         return out
     }
+
     func update(dt: CGFloat, state: VisualizerState, cfg: AnimationConfiguration, geo: Geometry) {
         let target = min(1.1, state.drive * CGFloat(cfg.intensity))
         amp += (target - amp) * smoothing(target > amp ? 18 : 6, dt)
@@ -49,8 +50,10 @@ final class LightningRenderer: StyleRenderer {
                 let t = min(1, d / len)
                 let env = pow(1 - t, 0.4)
                 let ripple = rc.state.rippleInfluence(at: t, side: side, speed: speed) * k
-                let a = H * min(1, 0.06 + 0.94 * min(1.1, amp * 0.6 + ripple * 0.9)) * env
-                return CGPoint(x: side.sign * (rc.clearance + d), y: a * s[min(i, s.count - 1)])
+                let level: CGFloat = min(1.1, amp * 0.6 + ripple * 0.9)
+                let a: CGFloat = H * min(1, 0.06 + 0.94 * level) * env
+                let seed: CGFloat = s[min(i, s.count - 1)]
+                return CGPoint(x: side.sign * (rc.clearance + d), y: a * seed)
             }
         }
 
