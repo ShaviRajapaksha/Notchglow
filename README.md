@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/macOS-13%2B-black?logo=apple&logoColor=white" alt="macOS 13 Ventura or later" />
+  <img src="https://img.shields.io/badge/macOS-13%2B-yellow?logo=apple&logoColor=white" alt="macOS 13 Ventura or later" />
   <img src="https://img.shields.io/badge/Swift-5.9%2B-F05138?logo=swift&logoColor=white" alt="Swift 5.9+" />
   <img src="https://img.shields.io/badge/SwiftUI%20%2B%20AppKit-native-0A84FF" alt="Native SwiftUI and AppKit" />
   <img src="https://img.shields.io/badge/network-none-30D158" alt="Zero network connections" />
