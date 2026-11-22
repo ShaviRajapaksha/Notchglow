@@ -223,21 +223,29 @@ struct SoundPane: View {
 
             if settings.app.reactToSystemAudio {
                 Card("Laptop music & system sound") {
-                    PermissionRow(
-                        title: "Screen & System Audio Recording",
-                        detail: "macOS uses this permission for system audio capture. Only the sound is analyzed; no screen content is recorded, stored or shown.",
-                        granted: permissions.screenRecordingGranted,
-                        request: permissions.requestScreenRecording,
-                        openSettings: permissions.openScreenRecordingSettings)
+                    if SystemAudioBackend.usesCoreAudioTap {
+                        Text("macOS will ask to allow \u{201C}System Audio Recording\u{201D}. That permission is for audio only: NotchGlow cannot see your screen. If the animation doesn't react to music, make sure NotchGlow is switched on under System Settings \u{2192} Privacy & Security \u{2192} Screen & System Audio Recording \u{2192} System Audio Recording Only.")
+                            .font(.callout).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        HStack {
+                            Button("Open System Settings") { permissions.openScreenRecordingSettings() }
+                            Button("Relaunch App") { permissions.relaunch() }
+                        }.controlSize(.small)
+                    } else {
+                        PermissionRow(
+                            title: "Screen & System Audio Recording",
+                            detail: "On this version of macOS, system audio capture needs this permission. Only the sound is analyzed; no screen content is recorded, stored or shown.",
+                            granted: permissions.screenRecordingGranted,
+                            request: permissions.requestScreenRecording,
+                            openSettings: permissions.openScreenRecordingSettings)
+                        if !permissions.screenRecordingGranted {
+                            Button("Relaunch App") { permissions.relaunch() }.controlSize(.small)
+                        }
+                    }
                     if let error = audioStatus.systemError {
                         Text(error).font(.caption).foregroundStyle(.red)
                     } else if audioStatus.systemRunning {
                         Label("Listening to system sound", systemImage: "waveform").foregroundStyle(.green).font(.callout)
-                    }
-                    if !permissions.screenRecordingGranted {
-                        Text("After allowing it in System Settings, you may need to relaunch the app once.")
-                            .font(.caption).foregroundStyle(.secondary)
-                        Button("Relaunch App") { permissions.relaunch() }.controlSize(.small)
                     }
                 }
             }
