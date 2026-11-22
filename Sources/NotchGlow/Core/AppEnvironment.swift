@@ -8,7 +8,7 @@ final class AppEnvironment {
     let settings: SettingsManager
     let permissions: PermissionsManager
     let monitor: KeyboardActivityMonitor
-    let systemAudio: SystemAudioMonitor
+    let systemAudio: SystemAudioSource
     let microphone: MicrophoneMonitor
     let audioStatus: AudioStatus
     let overlayEngine: VisualizerEngine
@@ -25,7 +25,11 @@ final class AppEnvironment {
         settings = s
         permissions = PermissionsManager()
         monitor = KeyboardActivityMonitor()
-        systemAudio = SystemAudioMonitor()
+        if #available(macOS 14.4, *) {
+            systemAudio = CoreAudioTapMonitor()        // audio-only permission, no screen access
+        } else {
+            systemAudio = SystemAudioMonitor()         // ScreenCaptureKit fallback for older macOS
+        }
         microphone = MicrophoneMonitor()
         audioStatus = AudioStatus()
         overlayEngine = oe
@@ -105,12 +109,18 @@ final class AppEnvironment {
 
         // Laptop music / system sound
         let wantSystem = live && a.reactToSystemAudio
-        permissions.monitorsScreenRecording = wantSystem
-        if wantSystem && !permissions.screenRecordingGranted && !askedScreenRecording {
-            askedScreenRecording = true
-            permissions.requestScreenRecording()
+        if SystemAudioBackend.usesCoreAudioTap {
+            // macOS 14.4+: audio-only tap. macOS shows its own prompt the first time.
+            if wantSystem { systemAudio.start() } else { systemAudio.stop() }
+        } else {
+            // Older macOS: ScreenCaptureKit needs the Screen & System Audio Recording permission.
+            permissions.monitorsScreenRecording = wantSystem
+            if wantSystem && !permissions.screenRecordingGranted && !askedScreenRecording {
+                askedScreenRecording = true
+                permissions.requestScreenRecording()
+            }
+            if wantSystem && permissions.screenRecordingGranted { systemAudio.start() } else { systemAudio.stop() }
         }
-        if wantSystem && permissions.screenRecordingGranted { systemAudio.start() } else { systemAudio.stop() }
 
         // Microphone
         if live && a.reactToMicrophone { microphone.start() } else { microphone.stop() }
