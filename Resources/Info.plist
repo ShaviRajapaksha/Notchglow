@@ -13,6 +13,7 @@
     <key>LSMinimumSystemVersion</key><string>13.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSAudioCaptureUsageDescription</key><string>NotchGlow listens to the sound your Mac plays so the animation can follow your music. Audio is analyzed live and never recorded or stored.</string>
     <key>NSMicrophoneUsageDescription</key><string>NotchGlow can react to sound around you. Audio is analyzed live and never recorded or stored.</string>
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <key>NSHumanReadableCopyright</key><string>NotchGlow</string>
