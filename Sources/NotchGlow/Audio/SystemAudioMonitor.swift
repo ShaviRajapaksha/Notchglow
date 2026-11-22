@@ -1,11 +1,11 @@
 import AppKit
-import ScreenCaptureKit
+@preconcurrency import ScreenCaptureKit
 import CoreMedia
 import AVFoundation
 
 /// Listens to everything the laptop plays (music, videos, ...) using ScreenCaptureKit's audio capture.
 /// Requires the "Screen & System Audio Recording" permission. Video frames are never used or stored.
-final class SystemAudioMonitor: NSObject, SCStreamOutput, SCStreamDelegate {
+final class SystemAudioMonitor: NSObject, SCStreamOutput, SCStreamDelegate, @unchecked Sendable {
     var onAudio: ((Float, [Float]) -> Void)?
     var onStatus: ((Bool, String?) -> Void)?
 
