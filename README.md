@@ -1,7 +1,7 @@
 <h1 align="center">
   <br>
   <!-- Add your logo here, for example: -->
-  <!-- <a href="https://github.com/<your-username>/NotchGlow"><img src="assets/logo.png" alt="NotchGlow macOS Notch and Menu Bar Visualizer Logo" width="150"></a> -->
+  <a href="https://github.com/<your-username>/NotchGlow"><img src="assets/notchglow.png" alt="NotchGlow macOS Notch and Menu Bar Visualizer Logo" width="150"></a>
   <br>
   NotchGlow
   <br>
