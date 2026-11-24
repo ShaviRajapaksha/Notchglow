@@ -22,6 +22,7 @@ final class AppEnvironment {
         let s = SettingsManager()
         let oe = VisualizerEngine(config: s.config)
         let pe = VisualizerEngine(config: s.config)
+        pe.lowPower = true
         settings = s
         permissions = PermissionsManager()
         monitor = KeyboardActivityMonitor()
@@ -105,6 +106,7 @@ final class AppEnvironment {
         let live = a.isEnabled && !a.detectionPaused
 
         // Typing
+        permissions.monitorsTyping = live && a.reactToTyping
         if live && a.reactToTyping && permissions.isSufficient { monitor.start() } else { monitor.stop() }
 
         // Laptop music / system sound
