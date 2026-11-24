@@ -55,6 +55,23 @@ final class SettingsManager: ObservableObject {
         app.hasCompletedOnboarding = onboarded
     }
 
+    /// Applies a ready-made palette as a three-color gradient.
+    func applyPalette(_ palette: ColorPalette) {
+        var updated = config
+        for (index, color) in palette.colors.enumerated() where index < updated.colors.count {
+            updated.colors[index] = color
+        }
+        updated.colorMode = .multiColor
+        updated.multiColorStops = 3
+        config = updated
+    }
+
+    func isActive(_ palette: ColorPalette) -> Bool {
+        guard config.colorMode == .multiColor, config.multiColorStops == 3 else { return false }
+        for (index, color) in palette.colors.enumerated() where config.colors[index] != color { return false }
+        return true
+    }
+
     func resetAnimation() {
         let style = config.style
         config = AnimationConfiguration()
