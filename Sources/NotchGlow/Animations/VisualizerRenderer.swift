@@ -39,7 +39,7 @@ final class VisualizerRenderer {
     }
 
     func render(into ctx: CGContext, size: CGSize, state: VisualizerState,
-                cfg: AnimationConfiguration, clearance: CGFloat) {
+                cfg: AnimationConfiguration, clearance: CGFloat, simplifiedGlow: Bool = false) {
         ctx.clear(CGRect(origin: .zero, size: size))
         guard state.alpha > 0.002 else { return }
         refreshLUT(cfg)
@@ -59,7 +59,7 @@ final class VisualizerRenderer {
         ctx.setAlpha(state.alpha * CGFloat(cfg.opacity))
         ctx.beginTransparencyLayer(auxiliaryInfo: nil)
         let rc = RenderContext(ctx: ctx, cfg: cfg, state: state, geo: geo, lut: lut,
-                               leftExtent: left, rightExtent: right)
+                               leftExtent: left, rightExtent: right, simplifiedGlow: simplifiedGlow)
         renderer(for: cfg.style).draw(rc)
         ctx.endTransparencyLayer()
         ctx.restoreGState()
