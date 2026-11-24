@@ -1,6 +1,6 @@
 import CoreGraphics
 
-/// Base class for styles made of per-column levels (needles, LED meter, ...).
+/// Base class for styles made of per-column levels (LED meter, ...).
 /// Keystroke ripples travel outward from the center and lift the columns they pass.
 /// Subclasses override `shape` (per-column height pattern) and `draw`.
 class LevelFieldRenderer: StyleRenderer {
