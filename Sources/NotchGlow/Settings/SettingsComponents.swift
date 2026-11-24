@@ -1,7 +1,8 @@
 import SwiftUI
 import AppKit
 
-/// Rounded, glass-inspired container.
+/// Rounded container. Deliberately a flat fill, not a blur material: live blurs on every card made switching
+/// panes stutter while the preview was animating.
 struct Card<Content: View>: View {
     let title: String?
     let content: Content
@@ -18,7 +19,7 @@ struct Card<Content: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.thinMaterial))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color(nsColor: .controlBackgroundColor)))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.primary.opacity(0.08)))
     }
 }
@@ -50,18 +51,6 @@ struct SliderRow: View {
             }
         }
     }
-}
-
-/// Native blurred window background.
-struct VisualEffectBackground: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let v = NSVisualEffectView()
-        v.material = .underWindowBackground
-        v.blendingMode = .behindWindow
-        v.state = .active
-        return v
-    }
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
 }
 
 /// Generates demo typing for the live preview.
