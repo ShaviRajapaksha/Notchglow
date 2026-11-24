@@ -3,6 +3,8 @@
 .AppleDouble
 .LSOverride
 
+dist
+
 # Xcode
 xcuserdata/
 *.xcuserstate
