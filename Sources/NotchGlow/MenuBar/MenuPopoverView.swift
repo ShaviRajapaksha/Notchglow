@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct MenuPopoverView: View {
@@ -10,7 +11,7 @@ struct MenuPopoverView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Image(systemName: "waveform.path").font(.title3).foregroundStyle(.tint)
+                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 24, height: 24)
                 Text("NotchGlow").font(.headline)
                 Spacer()
                 Toggle("", isOn: settings.appBinding(\.isEnabled))
@@ -35,6 +36,8 @@ struct MenuPopoverView: View {
             Toggle("React to typing", isOn: settings.appBinding(\.reactToTyping))
                 .disabled(!settings.app.isEnabled)
             Toggle("React to music & system sound", isOn: settings.appBinding(\.reactToSystemAudio))
+                .disabled(!settings.app.isEnabled)
+            Toggle("Show over full-screen apps", isOn: settings.appBinding(\.showInFullScreen))
                 .disabled(!settings.app.isEnabled)
 
             Divider()
@@ -61,6 +64,28 @@ struct MenuPopoverView: View {
                             )
                     }
                     .buttonStyle(.plain)
+                }
+            }
+
+            Divider()
+
+            Text("COLOR PALETTE").font(.caption2).foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                ForEach(ColorPalette.all) { palette in
+                    Button {
+                        settings.applyPalette(palette)
+                    } label: {
+                        Circle()
+                            .fill(LinearGradient(colors: palette.colors.map { $0.color },
+                                                 startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .frame(width: 24, height: 24)
+                            .overlay(Circle().strokeBorder(
+                                settings.isActive(palette) ? Color.accentColor : Color.primary.opacity(0.2),
+                                lineWidth: settings.isActive(palette) ? 2 : 1))
+                    }
+                    .buttonStyle(.plain)
+                    .help(palette.name)
+                    .accessibilityLabel("\(palette.name) palette")
                 }
             }
 
