@@ -8,7 +8,7 @@ final class OverlayPanel: NSPanel {
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
 }
 
-/// Creates/updates one overlay panel per target display.
+/// Creates/updates one overlay panel per target display, and hides them over full-screen apps when asked to.
 final class VisualizerWindowController {
     private struct Entry { let panel: OverlayPanel; let view: VisualizerView }
 
@@ -16,17 +16,43 @@ final class VisualizerWindowController {
     private let engine: VisualizerEngine
     private let settings: SettingsManager
     private var lastActiveID: CGDirectDisplayID?
+    private var watchTimer: Timer?
+    private var pendingRefreshes: [DispatchWorkItem] = []
+    private var observers: [NSObjectProtocol] = []
 
     init(engine: VisualizerEngine, settings: SettingsManager) {
         self.engine = engine
         self.settings = settings
+
+        // Entering / leaving a full-screen Space, or switching apps, may change whether we should be visible.
+        let workspace = NSWorkspace.shared.notificationCenter
+        let names: [NSNotification.Name] = [
+            NSWorkspace.activeSpaceDidChangeNotification,
+            NSWorkspace.didActivateApplicationNotification
+        ]
+        for name in names {
+            let token = workspace.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                self?.scheduleVisibilityRefresh()
+            }
+            observers.append(token)
+        }
+    }
+
+    deinit {
+        let workspace = NSWorkspace.shared.notificationCenter
+        observers.forEach { workspace.removeObserver($0) }
+        watchTimer?.invalidate()
     }
 
     func rebuild() {
         let app = settings.app
-        guard app.isEnabled else { removeAll(); return }
+        guard app.isEnabled else {
+            removeAll()
+            updateWatchTimer()
+            return
+        }
 
-        let screens = DisplayManager.targetScreens(mode: app.displayMode)
+        let screens = DisplayManager.targetScreens(settings: app)
         let wanted = Set(screens.compactMap { DisplayManager.displayID($0) })
         for id in Array(entries.keys) where !wanted.contains(id) { remove(id) }
 
@@ -41,9 +67,24 @@ final class VisualizerWindowController {
             let level = Self.windowLevel(for: app.layer)
             if entry.panel.level != level { entry.panel.level = level }
             if entry.panel.frame != frame { entry.panel.setFrame(frame, display: false) }
-            if !entry.panel.isVisible { entry.panel.orderFrontRegardless() }
         }
         engine.externalClearance = app.avoidNotch ? maxNotch + 6 : 0
+
+        applyVisibility()
+        updateWatchTimer()
+    }
+
+    /// Shows or hides each panel depending on the "Show over full-screen apps" setting.
+    func applyVisibility() {
+        let hideInFullScreen = !settings.app.showInFullScreen
+        for (id, entry) in entries {
+            let hidden = hideInFullScreen && FullScreenDetector.isFullScreen(displayID: id)
+            if hidden {
+                if entry.panel.isVisible { entry.panel.orderOut(nil) }
+            } else if !entry.panel.isVisible {
+                entry.panel.orderFrontRegardless()
+            }
+        }
     }
 
     /// For "display under the mouse": follow the mouse between screens.
@@ -54,6 +95,36 @@ final class VisualizerWindowController {
         lastActiveID = id
         rebuild()
     }
+
+    // MARK: Full-screen watching
+
+    /// Re-checks shortly after a Space or app change, and again once the full-screen animation has finished.
+    private func scheduleVisibilityRefresh() {
+        guard settings.app.isEnabled, !settings.app.showInFullScreen else { return }
+        pendingRefreshes.forEach { $0.cancel() }
+        pendingRefreshes.removeAll()
+        for delay in [0.2, 1.0] {
+            let work = DispatchWorkItem { [weak self] in self?.applyVisibility() }
+            pendingRefreshes.append(work)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+        }
+    }
+
+    /// A slow safety-net timer that only exists while "Show over full-screen apps" is turned off.
+    private func updateWatchTimer() {
+        let needed = settings.app.isEnabled && !settings.app.showInFullScreen && !entries.isEmpty
+        if needed && watchTimer == nil {
+            let timer = Timer(timeInterval: 2.0, repeats: true) { [weak self] _ in self?.applyVisibility() }
+            timer.tolerance = 0.5
+            RunLoop.main.add(timer, forMode: .common)
+            watchTimer = timer
+        } else if !needed {
+            watchTimer?.invalidate()
+            watchTimer = nil
+        }
+    }
+
+    // MARK: Windows
 
     /// Above: higher than the menu bar background, its icons and menus (drawn on top of the blur).
     /// Beneath: just below the menu bar window, so the menu bar's blur/background is drawn over the effect.
