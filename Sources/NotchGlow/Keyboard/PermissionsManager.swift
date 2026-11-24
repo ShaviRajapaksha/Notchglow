@@ -13,7 +13,10 @@ final class PermissionsManager: ObservableObject {
     @Published private(set) var screenRecordingGranted = false
     @Published private(set) var microphoneGranted = false
 
-    /// Set by the app while system-audio capture is wanted, so we keep checking until it is granted.
+    /// Set by the app while typing reactions are wanted, so we keep checking until a permission is granted.
+    var monitorsTyping = false { didSet { updatePolling() } }
+
+    /// Set by the app while system-audio capture (ScreenCaptureKit fallback) is wanted.
     var monitorsScreenRecording = false { didSet { updatePolling() } }
 
     var isSufficient: Bool { inputMonitoringGranted || accessibilityGranted }
@@ -39,9 +42,9 @@ final class PermissionsManager: ObservableObject {
         updatePolling()
     }
 
-    /// Poll (cheaply) only while a wanted permission is still missing.
+    /// Poll (cheaply) only while a permission that is actually wanted is still missing.
     private func updatePolling() {
-        let needsPolling = !isSufficient || (monitorsScreenRecording && !screenRecordingGranted)
+        let needsPolling = (monitorsTyping && !isSufficient) || (monitorsScreenRecording && !screenRecordingGranted)
         if !needsPolling {
             timer?.invalidate(); timer = nil
         } else if timer == nil {
@@ -86,9 +89,10 @@ final class PermissionsManager: ObservableObject {
 
     /// macOS sometimes only starts delivering events/audio after the app is relaunched.
     func relaunch() {
+        // Start the new copy after this one has quit, so the single-instance check doesn't stop it.
         let task = Process()
-        task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        task.arguments = ["-n", Bundle.main.bundleURL.path]
+        task.executableURL = URL(fileURLWithPath: "/bin/sh")
+        task.arguments = ["-c", "sleep 0.8; /usr/bin/open \"$0\"", Bundle.main.bundlePath]
         try? task.run()
         NSApp.terminate(nil)
     }
