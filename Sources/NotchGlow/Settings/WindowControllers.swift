@@ -9,6 +9,13 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         let env = AppEnvironment.shared
         env.permissions.refresh()
 
+        // Already open and no specific pane requested: just bring it to the front.
+        if let window, window.isVisible, pane == nil {
+            NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
         let root = SettingsRootView(settings: env.settings, permissions: env.permissions,
                                     audioStatus: env.audioStatus, previewEngine: env.previewEngine, initialPane: pane ?? .general)
         let hosting = NSHostingController(rootView: root)
@@ -41,7 +48,7 @@ struct OnboardingView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 12) {
-                Image(systemName: "keyboard").font(.system(size: 34)).foregroundStyle(.tint)
+                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 48, height: 48)
                 VStack(alignment: .leading) {
                     Text("Welcome to NotchGlow").font(.title2.bold())
                     Text("One quick step before the magic starts.").foregroundStyle(.secondary)
