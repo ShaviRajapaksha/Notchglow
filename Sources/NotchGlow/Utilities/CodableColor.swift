@@ -9,6 +9,16 @@ struct CodableColor: Codable, Equatable {
 
     init(r: Double, g: Double, b: Double) { self.r = r; self.g = g; self.b = b }
 
+    /// From a "#RRGGBB" string.
+    init(hex: String) {
+        let digits = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        var value: UInt64 = 0
+        Scanner(string: digits).scanHexInt64(&value)
+        self.init(r: Double((value >> 16) & 255) / 255,
+                  g: Double((value >> 8) & 255) / 255,
+                  b: Double(value & 255) / 255)
+    }
+
     init(_ color: NSColor) {
         let c = color.usingColorSpace(.sRGB) ?? NSColor.white
         self.init(r: Double(c.redComponent), g: Double(c.greenComponent), b: Double(c.blueComponent))
