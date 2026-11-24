@@ -9,6 +9,8 @@ struct RenderContext {
     let lut: [CGColor]
     let leftExtent: CGFloat       // current (animated) distance from center
     let rightExtent: CGFloat
+    /// One glow pass instead of two (used by the small Settings preview to keep the UI responsive).
+    var simplifiedGlow: Bool = false
 
     var clearance: CGFloat { geo.clearance }
     var bandHalf: CGFloat { geo.height * CGFloat(cfg.spikeHeight) / 2 }
@@ -29,9 +31,12 @@ struct RenderContext {
     /// Runs `body` twice inside transparency layers with a wide and a tight shadow = soft glow.
     func glow(_ body: () -> Void) {
         let g = CGFloat(cfg.glow)
-        let passes: [(blur: CGFloat, alpha: CGFloat)] = g > 0.01
-            ? [(g * 30, min(1, 0.3 + g * 0.7)), (g * 9, min(1, 0.4 + g * 0.6))]
-            : [(0, 0)]
+        var passes: [(blur: CGFloat, alpha: CGFloat)] = [(0, 0)]
+        if g > 0.01 {
+            passes = simplifiedGlow
+                ? [(g * 16, min(1, 0.5 + g * 0.5))]
+                : [(g * 30, min(1, 0.3 + g * 0.7)), (g * 9, min(1, 0.4 + g * 0.6))]
+        }
         for p in passes {
             ctx.saveGState()
             if p.blur > 0 {
