@@ -66,7 +66,7 @@ struct SettingsRootView: View {
             }
         }
         .frame(minWidth: 860, idealWidth: 920, minHeight: 640, idealHeight: 740)
-        .background(VisualEffectBackground())
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     @ViewBuilder private var detail: some View {
