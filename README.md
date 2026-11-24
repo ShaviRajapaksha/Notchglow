@@ -30,220 +30,188 @@
 
 ---
 
-## Features
+## ✨ Features
 
-- 🎧 **Music & System Audio Reactive** — Follows whatever your Mac plays (Apple Music, Spotify, YouTube, browser audio) or microphone input with real-time beat detection and a live 16-band frequency spectrum.
-- ⌨️ **Typing Reactive** — Every keystroke sends a responsive ripple from the center; faster typing increases energy, and animations smoothly fade out when you stop.
-- 🎨 **10 Built-In Animation Styles** — Spike Wave, Needle Spikes, Audio Wave, Equalizer, LED Meter, Heartbeat, Lightning, Particle Burst, Energy Pulse, and Minimal Glow.
-- 🎚️ **Full Live Customization** — Tune width, height, left/right expansion, multi-color gradients, opacity, glow, blur, speed, intensity, and symmetry with an instant live preview.
-- 🪟 **Flexible Menu Bar Layering** — Draw animations above the menu bar's blur or subtly beneath it.
-- 🔗 **Notch-Aware Layout** — Run one continuous animation across the center, or leave a clean gap around the MacBook notch.
-- 🖥️ **Multi-Display Support** — Display across all monitors, follow the display under your cursor, or target your primary screen.
-- 🔒 **Private & Offline by Design** — Never logs keystrokes, never records or saves audio, and makes zero network connections.
-
----
-
-## Installation
-
-### System Requirements
-- **macOS 13 Ventura** or later
-- **Apple Silicon** or **Intel** Mac
-
-> [!NOTE]
-> Music and system-sound reactions use an audio-only permission on **macOS 14.4 or later**. On **macOS 13 – 14.3**, they use the *Screen & System Audio Recording* permission instead. Typing and microphone reactions work on all supported macOS versions.
-
-### Option 1: Build from Source (3 Commands)
-
-Requires Xcode Command Line Tools (`Swift 5.9+`).
-
-```bash
-xcode-select --install          # One-time setup if you don't have the Swift toolchain
-cd NotchGlow
-./build_app.sh                  # Compiles and packages build/NotchGlow.app
-open build/NotchGlow.app
-```
-
-- **Debug build:** `./build_app.sh debug`
-- **Quit:** Click the menu bar icon and quit from the popover (the app runs without a Dock icon).
-
-<!--
-### Option 2: Download Prebuilt DMG
-Uncomment this section once you publish a GitHub Release.
-
-<a href="https://github.com/<your-username>/NotchGlow/releases/latest/download/NotchGlow.dmg" target="_self"><img width="200" src="assets/download.png" alt="Download NotchGlow for macOS" /></a>
-
-1. Open the downloaded `.dmg` file.
-2. Drag **NotchGlow** into your `/Applications` folder.
--->
-
-<!--
-### Option 3: Install via Homebrew
-Uncomment once you publish a Homebrew tap.
-
-```bash
-brew install --cask <your-username>/notchglow/notchglow
-```
--->
+- 🎧 **Reacts to your music.** Follows whatever your Mac plays (Apple Music, Spotify, YouTube, videos…) with beat detection and a live frequency spectrum: bass in the middle, treble toward the edges.
+- ⌨️ **Reacts to your typing.** Every keystroke triggers a ripple from the center. Type fast and it gets more energetic.
+- 🎙️ **Reacts to the room.** Optionally listens to the microphone, too.
+- 🎨 **10 animation styles.** Spike Wave, Audio Wave, Helix Wave, Equalizer, LED Meter, Heartbeat, Lightning, Particle Burst, Energy Pulse and Minimal Glow.
+- 🌈 **Color palettes.** Aurora, Ember, Lagoon, Orchid, Mono and Lime, or design your own gradient.
+- 🎚️ **Make it yours.** Size, glow, blur, opacity, speed, intensity, symmetry, timing and more, all with a live preview.
+- 🖥️ **Multi-monitor ready.** Show it on every display, only the ones you choose, or wherever your mouse is.
+- 🪟 **Full-screen aware.** Keep it over full-screen apps, or hide it there.
+- 📌 **Above or beneath the menu bar.** Draw on top of the menu bar's blur, or behind it.
+- 🔒 **Private by design.** It never knows *which* keys you press, never records audio, and never connects to the internet.
+- 🪶 **Featherweight.** Renders only while something is moving.
 
 ---
 
-### First-Launch Gatekeeper Notice (Unsigned Builds)
+## Download & Install
 
-> [!IMPORTANT]
-> If you download a prebuilt copy of NotchGlow that is not signed with an Apple Developer ID, macOS will show an "unidentified developer" warning on first launch. This is expected and only needs to be bypassed once.
+**Requires macOS 13 Ventura or later.** Works on Apple Silicon and Intel Macs.
 
-#### Recommended: Terminal
-After moving `NotchGlow.app` to `/Applications`, run:
+1. Download the latest **NotchGlow `.dmg`** from the [Releases](../../releases/latest) page.
+2. Open it and drag **NotchGlow** onto the **Applications** shortcut.
+3. Open NotchGlow from your Applications folder. A waveform icon appears in your menu bar.
+
+<details>
+<summary><b>macOS says "NotchGlow can't be opened because it is from an unidentified developer"</b></summary>
+
+<br>
+
+This appears for apps that aren't signed with an Apple Developer ID, and only the first time you open the app. Either:
+
+**Use Terminal (always works):**
 
 ```bash
 xattr -dr com.apple.quarantine "/Applications/NotchGlow.app"
 ```
 
-Then open the app normally.
-
-#### Alternative: System Settings
-1. Attempt to open **NotchGlow** and click **OK** on the security prompt.
-2. Open **System Settings → Privacy & Security**.
-3. Scroll to the bottom and click **Open Anyway** next to the NotchGlow notice.
-4. Confirm when prompted.
-
----
-
-## Usage & Permissions
-
-1. Launch **NotchGlow**—a waveform icon appears in your macOS menu bar.
-2. Click the icon to switch animation styles, toggle the **Layer** (above or beneath the menu bar), choose input triggers, or open **Customize…**.
-3. Play music or start typing in any app to see the top of your screen react in real time.
-4. Changes in **Customize…** preview live at the top of the screen and save automatically.
-
-### macOS Privacy Permissions
-
-macOS restricts global keyboard input, system audio, and microphone access. NotchGlow walks you through granting permission the first time you enable each trigger:
-
-| Trigger | Required Permission | System Settings Path |
-|---|---|---|
-| **Typing in any app** | Input Monitoring **or** Accessibility | System Settings → Privacy & Security |
-| **Music / System Audio (macOS 14.4+)** | System Audio Recording *(audio only, no screen access)* | System Settings → Privacy & Security → Screen & System Audio Recording → *System Audio Recording Only* |
-| **Music / System Audio (macOS 13 – 14.3)** | Screen & System Audio Recording | System Settings → Privacy & Security |
-| **Ambient Sound / Voice** | Microphone | System Settings → Privacy & Security |
-
-After enabling a permission, macOS may require restarting the app before delivering events—use the built-in **Relaunch App** button in the app window.
-
-> [!NOTE]
-> **Privacy Guarantee:** Key events are never inspected—no characters, key codes, or modifiers are read, logged, or stored. Audio is analyzed live in memory (loudness + 16-band spectrum) and immediately discarded. NotchGlow makes zero network requests.
-
-> [!TIP]
-> **For Developers Rebuilding Locally:** `./build_app.sh` ad-hoc signs the binary, which can cause macOS to treat each rebuild as a new app and reset permissions. You can re-grant permissions, reset via `tccutil reset ListenEvent com.example.NotchGlow`, or sign with a consistent development certificate:
-> ```bash
-> CODESIGN_IDENTITY="Apple Development: Your Name" ./build_app.sh
-> ```
-
----
-
-## Roadmap
-
-- [x] Typing reactions ⌨️
-- [x] Music and system-sound reactions with beat detection and live spectrum 🎧
-- [x] Microphone input 🎙️
-- [x] 10 animation styles 🎨
-- [x] Gradients, glow, blur, and full dimension control 🎚️
-- [x] Above / beneath the menu bar layer 🪟
-- [x] Connected sides and notch-aware center gap 🔗
-- [x] Multi-display support 🖥️
-- [x] Live preview and automatic settings persistence 💾
-- [x] Launch at login 🚀
-- [ ] Notarized release and Homebrew cask 📦
-- [ ] Floating "island" mode 🏝️
-- [ ] Shareable style presets and settings import / export 🧩
-- [ ] Additional animation styles ✨
-
----
-
-## Technical Architecture & Under the Hood
-
-<details>
-<summary><b>Settings Reference</b></summary>
-
-- **General** — Enable/disable visualizer, pause all detection, target display(s), menu bar layer (above/beneath), notch clearance, vertical offset, launch at login, reset defaults.
-- **Animation Styles** — Spike Wave, Needle Spikes, Audio Wave, Equalizer, LED Meter, Heartbeat, Lightning, Particle Burst, Energy Pulse, Minimal Glow.
-- **Appearance** — Solid, two-color, or multi-color gradient (center → edge), opacity, glow, blur, corner radius, line thickness, spike/bar/column count, spike height, particle count, speed, intensity.
-- **Dimensions** — Overall width and height, left/right expansion (% of half-width), connect left and right sides, center gap size.
-- **Behavior** — Animation duration, fade-out duration, sensitivity, typing intensity, frequency, symmetry, randomization, idle animation.
-- **Sound & Music** — Toggle triggers independently: typing, system music & audio, microphone.
-- **Permissions & About** — Permission status helpers and app info.
-
-</details>
-
-<details>
-<summary><b>Project Structure</b></summary>
-
-```text
-Sources/NotchGlow
-├─ App/         main.swift, AppDelegate
-├─ Core/        AnimationConfiguration, AppSettings, SettingsManager, AppEnvironment
-├─ Audio/       AudioAnalyzer (loudness + 16-band spectrum), CoreAudioTapMonitor, SystemAudioMonitor, MicrophoneMonitor
-├─ Keyboard/    KeyboardActivityMonitor (event-only detection), PermissionsManager
-├─ MenuBar/     MenuBarManager (NSStatusItem + popover), MenuPopoverView
-├─ Overlay/     VisualizerWindowController (non-activating click-through NSPanel per display), DisplayManager
-├─ Animations/  VisualizerEngine (on-demand timer), VisualizerState, VisualizerRenderer,
-│               StyleRenderer protocol + 10 style renderers, RenderContext, VisualizerView
-├─ Settings/    SwiftUI settings window, panes, onboarding, live preview
-└─ Utilities/   Math helpers, CodableColor, LaunchAtLogin
-Resources/      Info.plist
-```
-
-Keyboard and audio monitors feed scalar intensity and frequency data into the animation engine; individual style renderers never access raw keystrokes or audio buffers.
-
-</details>
-
-<details>
-<summary><b>Performance & Resource Usage</b></summary>
-
-- **0% Idle CPU:** The 60 FPS render timer runs only while an animation is visible and stops completely once faded out.
-- **Low-Power Idle Mode:** Optional idle animation (disabled by default) runs at 30 FPS.
-- **Full Teardown on Disable:** Turning off the visualizer stops all timers, keyboard monitors, and audio taps, and hides all overlay panels.
-
-</details>
-
-<details>
-<summary><b>Known Limitations</b></summary>
-
-- Certain native full-screen apps and Spaces may cover or hide the overlay window.
-- When the macOS menu bar is set to auto-hide, NotchGlow uses a `24 pt` fallback menu bar height (adjustable via **Vertical offset**).
-- Enabling **Blur** applies a Core Image layer filter, which increases GPU usage while animating.
-- macOS does not expose a public API to query the status of the audio-only capture permission, so the **Sound & Music** pane provides setup guidance and a relaunch button instead of a live status badge.
+**…or use System Settings:** try to open the app, click **OK**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to the NotchGlow message.
 
 </details>
 
 ---
 
-## Contributing
+## Getting Started
 
-Contributions are welcome! Fork the repository, create a feature branch, and submit a pull request.
+1. **Click the menu bar icon.** A small panel opens where you can switch animation styles, pick a color palette, choose what NotchGlow reacts to, and decide whether it sits above or beneath the menu bar.
+2. **Press play on some music, or just start typing.** NotchGlow asks for the permissions it needs the first time you use each feature. A short welcome screen walks you through it.
+3. **Open Customize…** from the panel for the full settings. Everything you change is previewed live and saved automatically.
 
-**Adding a new animation style:**
-1. Create a renderer conforming to `StyleRenderer`.
-2. Add a new case to `AnimationStyle`.
-3. Return your renderer in `makeRenderer()`.
+**Tip:** right-click the menu bar icon for a quick menu to turn NotchGlow on or off, open Customize, or quit.
 
-New styles automatically appear in both the menu bar popover and the **Customize…** window.
+---
 
-<!--
-## Community & Support
+## Customize Everything
 
-<a href="https://discord.gg/<your-invite>" target="_blank"><img src="assets/discord.png" alt="Join the NotchGlow Discord server" height="60" /></a>
-<a href="https://ko-fi.com/<your-name>" target="_blank"><img src="assets/kofi.png" alt="Support NotchGlow on Ko-fi" height="60" /></a>
+| Section | What you can change |
+|---|---|
+| **General** | Turn NotchGlow on or off, pause all detection, the center gap and connected sides, which displays to use, full-screen behavior, layer, notch avoidance, vertical position, launch at login |
+| **Animation Styles** | Pick one of the 10 styles |
+| **Appearance** | Color palettes and custom gradients, opacity, glow, blur, corner radius, line thickness, element counts, speed, intensity |
+| **Dimensions** | Overall width and height, how far each side expands |
+| **Behavior** | How long the effect lingers and fades, sensitivity, typing intensity, frequency, symmetry, randomness, idle animation |
+| **Sound & Music** | Choose to react to typing, music and system sound, the microphone, or any combination |
+
+### Choose your displays
+
+Under **General → Display** pick where NotchGlow appears:
+
+- **All displays**
+- **Selected displays**: tick the monitors you want. Your choice is remembered even if a monitor is unplugged and plugged back in.
+- **Display under the mouse**: follows your cursor from screen to screen.
+
+Switch off **Show over full-screen apps** and NotchGlow steps aside whenever an app, video or game goes full screen.
+
+---
+
+## Permissions & Privacy
+
+macOS keeps keyboard input, system sound and the microphone private, so it asks before any app can use them. NotchGlow only asks for what the features you turn on need.
+
+| To react to… | macOS permission |
+|---|---|
+| Typing in other apps | **Input Monitoring** or **Accessibility** (either one) |
+| Music and system sound (macOS 14.4 and later) | **System Audio Recording**, audio only, no access to your screen |
+| Music and system sound (macOS 13 – 14.3) | **Screen & System Audio Recording** |
+| Sound around you | **Microphone** |
+
+You can review or change these any time in **System Settings → Privacy & Security**.
+
+**Your privacy comes first:**
+
+- NotchGlow only notices *that* a key was pressed, never *which* key. It reads no characters and keeps no log.
+- Sound is analyzed live in memory to measure loudness and frequencies, then thrown away. Nothing is recorded or saved.
+- NotchGlow makes **no network connections** and has no accounts or analytics.
+
+---
+
+## FAQ
+
+<details>
+<summary><b>Does it work on a Mac without a notch?</b></summary>
+<br>
+Yes. The effect is centered on your menu bar on every Mac. On notched MacBooks you can keep the camera area clear or let the effect flow right through it.
+</details>
+
+<details>
+<summary><b>Will it slow down my Mac or drain the battery?</b></summary>
+<br>
+No. NotchGlow only draws while something is actually animating, and uses essentially no CPU when idle.
+</details>
+
+<details>
+<summary><b>Does it record what I type or what I listen to?</b></summary>
+<br>
+No. It cannot see which keys you press, and audio is measured live and immediately discarded. It never connects to the internet.
+</details>
+
+<details>
+<summary><b>Why does it need Input Monitoring or Accessibility?</b></summary>
+<br>
+macOS requires one of these before any app can notice key presses in other apps. NotchGlow uses it only to know that a key was pressed, so it can animate.
+</details>
+
+<details>
+<summary><b>It stopped reacting after I installed an update.</b></summary>
+<br>
+macOS can reset an app's permissions when it is replaced by a new copy. Open <b>System Settings → Privacy & Security</b>, switch NotchGlow back on under the relevant permission, then use <b>Relaunch App</b> in NotchGlow's Permissions or Sound &amp; Music pane.
+</details>
+
+<details>
+<summary><b>The effect isn't reacting to my music.</b></summary>
+<br>
+Open <b>Customize… → Sound &amp; Music</b>, make sure <b>Laptop music &amp; system sound</b> is on, and allow the permission when macOS asks. Then relaunch NotchGlow once.
+</details>
+
+<details>
+<summary><b>I use several monitors. Can I choose where it shows?</b></summary>
+<br>
+Yes. In <b>General → Display</b> choose <b>Selected displays</b> and tick the monitors you want.
+</details>
+
+<details>
+<summary><b>How do I start it at login?</b></summary>
+<br>
+<b>Customize… → General → Startup → Launch at login.</b>
+</details>
+
+<details>
+<summary><b>How do I quit or uninstall it?</b></summary>
+<br>
+Right-click the menu bar icon and choose <b>Quit NotchGlow</b>. To uninstall, drag NotchGlow from Applications to the Trash. To also remove its settings, run <code>defaults delete com.notchglow.app</code> in Terminal.
+</details>
+
+---
+
+## 📋 Roadmap
+
+- [x] Typing, music, system-sound and microphone reactions
+- [x] 10 animation styles and 6 color palettes
+- [x] Multi-display selection and full-screen control
+- [x] Above / beneath the menu bar
+- [ ] Notarized release and Homebrew install
+- [ ] Floating "island" mode
+- [ ] Style presets and settings import / export
+- [ ] More animation styles
+
+---
+
+## Feedback & Support
+
+Found a bug or have an idea? Please [open an issue](../../issues). When reporting a problem, include your macOS version and which reaction (typing, music, microphone) was involved.
+
+<!-- Add your own links here, for example:
+- Website: https://your-domain.com
+- Support: support@your-domain.com
 -->
 
+
+## For Developers
+
+Building from source, creating a DMG, signing and notarizing: see [BUILDING.md](BUILDING.md).
+
 ---
 
-## Acknowledgments
-
-NotchGlow is built entirely with Apple's native frameworks:
-
-- **SwiftUI** & **AppKit** — Settings UI, menu bar popover, and click-through transparent overlay windows
-- **Core Graphics** & **Core Animation** — High-frame-rate vector and glow rendering
-- **Core Audio** & **ScreenCaptureKit** — Low-latency system audio capture
-- **AVFoundation** — Real-time microphone input analysis
-
-Thank you for checking out **NotchGlow**!
+<p align="center">Keep your Mac glowing. ✨</p>
