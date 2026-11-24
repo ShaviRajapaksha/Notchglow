@@ -1,14 +1,21 @@
 import Foundation
 
 enum DisplayMode: String, Codable, CaseIterable, Identifiable {
-    case allDisplays, activeDisplay, primaryDisplay
+    case allDisplays, selectedDisplays, activeDisplay
     var id: String { rawValue }
+
     var title: String {
         switch self {
         case .allDisplays: return "All displays"
+        case .selectedDisplays: return "Selected displays"
         case .activeDisplay: return "Display under the mouse"
-        case .primaryDisplay: return "Primary display only"
         }
+    }
+
+    /// Unknown or removed values from older versions (e.g. "primaryDisplay") fall back to all displays.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = DisplayMode(rawValue: raw) ?? .allDisplays
     }
 }
 
@@ -32,9 +39,11 @@ struct AppSettings: Codable, Equatable {
     var reactToSystemAudio: Bool = false      // laptop music & system sound
     var reactToMicrophone: Bool = false       // sound around you
     var displayMode: DisplayMode = .allDisplays
+    var selectedDisplays: [String] = []       // display UUIDs, used when displayMode == .selectedDisplays
+    var showInFullScreen: Bool = true         // false hides the effect while an app is in full screen
     var layer: OverlayLayer = .aboveMenuBar
     var avoidNotch: Bool = true
-    var verticalOffset: Double = 0          // positive moves the animation down
+    var verticalOffset: Double = 0            // positive moves the animation down
     var hasCompletedOnboarding: Bool = false
 
     init() {}
@@ -48,6 +57,8 @@ struct AppSettings: Codable, Equatable {
         reactToSystemAudio = try c.decodeIfPresent(Bool.self, forKey: .reactToSystemAudio) ?? d.reactToSystemAudio
         reactToMicrophone = try c.decodeIfPresent(Bool.self, forKey: .reactToMicrophone) ?? d.reactToMicrophone
         displayMode = try c.decodeIfPresent(DisplayMode.self, forKey: .displayMode) ?? d.displayMode
+        selectedDisplays = try c.decodeIfPresent([String].self, forKey: .selectedDisplays) ?? d.selectedDisplays
+        showInFullScreen = try c.decodeIfPresent(Bool.self, forKey: .showInFullScreen) ?? d.showInFullScreen
         layer = try c.decodeIfPresent(OverlayLayer.self, forKey: .layer) ?? d.layer
         avoidNotch = try c.decodeIfPresent(Bool.self, forKey: .avoidNotch) ?? d.avoidNotch
         verticalOffset = try c.decodeIfPresent(Double.self, forKey: .verticalOffset) ?? d.verticalOffset
