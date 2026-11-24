@@ -10,6 +10,10 @@ final class VisualizerEngine {
 
     private var timer: Timer?
     private var currentInterval: TimeInterval = 0
+
+    /// Lighter rendering (30 FPS, single glow pass) for the small Settings preview.
+    var lowPower = false
+    private var baseInterval: TimeInterval { lowPower ? 1.0 / 30.0 : 1.0 / 60.0 }
     private var lastTick: CFTimeInterval = 0
 
     var config: AnimationConfiguration {
@@ -45,7 +49,7 @@ final class VisualizerEngine {
     private var effectiveClearance: CGFloat {
         config.connectSides ? 0 : max(config.clearance, externalClearance)
     }
-    private var hasViews: Bool { views.count > 0 }
+    private var hasViews: Bool { !views.allObjects.isEmpty }   // NSHashTable.count can include released views
 
     // MARK: Views
     func attach(_ view: VisualizerView) {
@@ -61,7 +65,8 @@ final class VisualizerEngine {
     }
 
     func render(into ctx: CGContext, size: CGSize) {
-        renderer.render(into: ctx, size: size, state: state, cfg: config, clearance: effectiveClearance)
+        renderer.render(into: ctx, size: size, state: state, cfg: config, clearance: effectiveClearance,
+                        simplifiedGlow: lowPower)
     }
 
     // MARK: Input
@@ -88,7 +93,7 @@ final class VisualizerEngine {
         guard isEnabled, hasViews else { return }
         if timer == nil {
             lastTick = CACurrentMediaTime()
-            startTimer(1.0 / 60.0)
+            startTimer(baseInterval)
         }
     }
 
@@ -122,7 +127,7 @@ final class VisualizerEngine {
             return
         }
         // Idle animation runs at a reduced frame rate.
-        let wanted: TimeInterval = (config.idleAnimation && state.isQuiescent(config)) ? 1.0 / 30.0 : 1.0 / 60.0
+        let wanted: TimeInterval = (config.idleAnimation && state.isQuiescent(config)) ? 1.0 / 30.0 : baseInterval
         if abs(wanted - currentInterval) > 0.001 { startTimer(wanted) }
     }
 
