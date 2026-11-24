@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 // MARK: General
@@ -7,24 +8,56 @@ struct GeneralPane: View {
     @State private var loginError: String?
     @State private var confirmReset = false
 
+    /// Switching to "Selected displays" for the first time preselects the main display, so something is shown.
+    private var displayModeBinding: Binding<DisplayMode> {
+        Binding<DisplayMode>(
+            get: { settings.app.displayMode },
+            set: { newMode in
+                if newMode == .selectedDisplays {
+                    let available = DisplayManager.availableDisplays()
+                    let connected = Set(available.map { $0.id })
+                    let hasConnectedSelection = settings.app.selectedDisplays.contains { connected.contains($0) }
+                    if !hasConnectedSelection, let first = available.first {
+                        settings.app.selectedDisplays = [first.id]
+                    }
+                }
+                settings.app.displayMode = newMode
+            }
+        )
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             Card("Visualizer") {
                 Toggle("Enable visualizer", isOn: settings.appBinding(\.isEnabled))
-                Toggle("Pause typing detection", isOn: settings.appBinding(\.detectionPaused))
+                Toggle("Pause all detection", isOn: settings.appBinding(\.detectionPaused))
                     .disabled(!settings.app.isEnabled)
-                Text("Pausing stops keyboard monitoring entirely while keeping the app available in the menu bar.")
+                Text("Pausing stops listening to the keyboard, system sound and microphone entirely, while keeping the app available in the menu bar.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Card("Center") {
+                Toggle("Connect left and right sides", isOn: settings.binding(\.connectSides))
+                Text("Draws one continuous effect through the center. Turn off to leave a gap (for example around the notch).")
+                    .font(.caption).foregroundStyle(.secondary)
+                SliderRow(title: "Center size", value: settings.binding(\.centerSize), range: 0...400, step: 2, unit: " pt",
+                          note: "Width of the empty gap at the center. Only used when the sides are not connected.")
+                    .disabled(settings.config.connectSides)
+            }
             Card("Display") {
-                Picker("Show on", selection: settings.appBinding(\.displayMode)) {
+                Picker("Show on", selection: displayModeBinding) {
                     ForEach(DisplayMode.allCases) { Text($0.title).tag($0) }
+                }
+                if settings.app.displayMode == .selectedDisplays {
+                    DisplayChooser(settings: settings)
                 }
                 Picker("Layer", selection: settings.appBinding(\.layer)) {
                     ForEach(OverlayLayer.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 Text("Above draws the effect on top of the menu bar, including its blurred background. Beneath draws it behind the menu bar, so the blur is applied over the effect.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Toggle("Show over full-screen apps", isOn: settings.appBinding(\.showInFullScreen))
+                Text("Turn this off to hide the effect while an app, video or game is in full screen.")
                     .font(.caption).foregroundStyle(.secondary)
                 Toggle("Keep the camera notch area clear", isOn: settings.appBinding(\.avoidNotch))
                 SliderRow(title: "Vertical offset", value: settings.appBinding(\.verticalOffset),
@@ -72,7 +105,7 @@ struct StylesPane: View {
                     }
                     .padding(14)
                     .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
-                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.thinMaterial))
+                    .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color(nsColor: .controlBackgroundColor)))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .strokeBorder(selected ? Color.accentColor : Color.primary.opacity(0.08),
@@ -88,33 +121,36 @@ struct StylesPane: View {
 // MARK: Appearance
 struct AppearancePane: View {
     @ObservedObject var settings: SettingsManager
-
-    private var gradientColors: [Color] {
-        let c = settings.config.activeColors.map { $0.color }
-        return c.count == 1 ? c + c : c
-    }
+    @State private var showCustomColors = false
 
     var body: some View {
         VStack(spacing: 16) {
-            Card("Color") {
-                Picker("Mode", selection: settings.binding(\.colorMode)) {
-                    ForEach(ColorMode.allCases) { Text($0.title).tag($0) }
+            Card("Color palette") {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 10)], spacing: 10) {
+                    ForEach(ColorPalette.all) { palette in
+                        PaletteSwatch(palette: palette, isSelected: settings.isActive(palette)) {
+                            settings.applyPalette(palette)
+                        }
+                    }
                 }
-                .pickerStyle(.segmented).labelsHidden()
-
-                let count = settings.config.activeColors.count
-                ForEach(0..<count, id: \.self) { i in
-                    ColorPicker(count == 1 ? "Color" : "Color \(i + 1)",
-                                selection: settings.colorBinding(i), supportsOpacity: false)
-                }
-                if settings.config.colorMode == .multiColor {
-                    Stepper("Number of colors: \(settings.config.multiColorStops)",
-                            value: settings.binding(\.multiColorStops), in: 3...5)
-                }
-                LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
-                    .frame(height: 10).clipShape(Capsule())
-                Text("Gradients run from the center (first color) outward (last color).")
+                Text("Gradients run from the center outward.")
                     .font(.caption).foregroundStyle(.secondary)
+
+                Button {
+                    showCustomColors.toggle()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: showCustomColors ? "chevron.down" : "chevron.right")
+                            .font(.caption.weight(.semibold)).frame(width: 10)
+                        Text("Custom colors")
+                    }
+                }
+                .buttonStyle(.plain)
+
+                // Created only when opened: color wells are comparatively expensive to build.
+                if showCustomColors {
+                    CustomColorsView(settings: settings)
+                }
             }
             Card("Look") {
                 SliderRow(title: "Opacity", value: settings.binding(\.opacity), range: 0.1...1, decimals: 2)
@@ -127,7 +163,7 @@ struct AppearancePane: View {
             }
             Card("Elements") {
                 SliderRow(title: "Spike / bar / column count", value: settings.intBinding(\.spikeCount), range: 6...80,
-                          step: 1, note: "Per side. Used by Spike Wave, Needle Spikes, Equalizer and LED Meter.")
+                          step: 1, note: "Per side. Used by Spike Wave, Equalizer and LED Meter.")
                 SliderRow(title: "Spike height", value: settings.binding(\.spikeHeight), range: 0.2...1, decimals: 2,
                           note: "Fraction of the overall height that elements may reach.")
                 SliderRow(title: "Particle count", value: settings.intBinding(\.particleCount), range: 10...300,
@@ -137,6 +173,65 @@ struct AppearancePane: View {
                 SliderRow(title: "Animation speed", value: settings.binding(\.speed), range: 0.3...3, decimals: 2, unit: "×")
                 SliderRow(title: "Animation intensity", value: settings.binding(\.intensity), range: 0.2...2, decimals: 2, unit: "×")
             }
+        }
+    }
+}
+
+/// One palette in the grid: a gradient bar with its name.
+struct PaletteSwatch: View {
+    let palette: ColorPalette
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                LinearGradient(colors: palette.colors.map { $0.color }, startPoint: .leading, endPoint: .trailing)
+                    .frame(height: 26)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                Text(palette.name).font(.caption)
+            }
+            .padding(8)
+            .frame(maxWidth: .infinity)
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(isSelected ? 0.10 : 0.04)))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(isSelected ? Color.accentColor : Color.primary.opacity(0.10), lineWidth: isSelected ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(palette.name) palette")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// Manual color mode and pickers (the original color controls), shown on demand.
+struct CustomColorsView: View {
+    @ObservedObject var settings: SettingsManager
+
+    private var gradientColors: [Color] {
+        let c = settings.config.activeColors.map { $0.color }
+        return c.count == 1 ? c + c : c
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Picker("Mode", selection: settings.binding(\.colorMode)) {
+                ForEach(ColorMode.allCases) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.segmented).labelsHidden()
+
+            let count = settings.config.activeColors.count
+            ForEach(0..<count, id: \.self) { i in
+                ColorPicker(count == 1 ? "Color" : "Color \(i + 1)",
+                            selection: settings.colorBinding(i), supportsOpacity: false)
+            }
+            if settings.config.colorMode == .multiColor {
+                Stepper("Number of colors: \(settings.config.multiColorStops)",
+                        value: settings.binding(\.multiColorStops), in: 3...5)
+            }
+            LinearGradient(colors: gradientColors, startPoint: .leading, endPoint: .trailing)
+                .frame(height: 10).clipShape(Capsule())
         }
     }
 }
@@ -156,14 +251,6 @@ struct DimensionsPane: View {
                           unit: " %", note: "How far the left side may reach, as a share of half the overall width.")
                 SliderRow(title: "Right expansion", value: settings.binding(\.rightExpansion), range: 5...100, step: 1,
                           unit: " %", note: "Same for the right side. Set different values for a lopsided effect.")
-            }
-            Card("Center") {
-                Toggle("Connect left and right sides", isOn: settings.binding(\.connectSides))
-                Text("Draws one continuous effect through the center. Turn off to leave a gap (for example around the notch).")
-                    .font(.caption).foregroundStyle(.secondary)
-                SliderRow(title: "Center size", value: settings.binding(\.centerSize), range: 0...400, step: 2, unit: " pt",
-                          note: "Width of the empty gap at the center. Only used when the sides are not connected.")
-                    .disabled(settings.config.connectSides)
             }
         }
     }
@@ -265,7 +352,7 @@ struct SoundPane: View {
             }
 
             Card("How it reacts") {
-                Text("Loudness drives the energy, beats trigger ripples and bursts, and Spike Wave, Needle Spikes, Equalizer and LED Meter show a live frequency spectrum, with bass in the center and treble toward the edges. Tune it with Reaction sensitivity in Behavior. The live preview above reacts to sound too.")
+                Text("Loudness drives the energy, beats trigger ripples and bursts, and Spike Wave, Equalizer and LED Meter show a live frequency spectrum, with bass in the center and treble toward the edges. Tune it with Reaction sensitivity in Behavior. The live preview above reacts to sound too.")
                     .font(.callout).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -311,21 +398,73 @@ struct AboutPane: View {
     var version: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
+    var build: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
 
     var body: some View {
         VStack(spacing: 16) {
             Card {
                 HStack(spacing: 14) {
-                    Image(systemName: "waveform.path").font(.system(size: 36)).foregroundStyle(.tint)
+                    Image(nsImage: NSApp.applicationIconImage)
+                        .resizable().frame(width: 64, height: 64)
                     VStack(alignment: .leading) {
                         Text("NotchGlow").font(.title2.bold())
-                        Text("Version \(version)").foregroundStyle(.secondary)
+                        Text("Version \(version) (\(build))").foregroundStyle(.secondary)
                     }
                 }
                 Text("Dynamic, customizable animations around the menu bar that react to your typing.")
                     .foregroundStyle(.secondary)
             }
             Card { PrivacyNote() }
+        }
+    }
+}
+
+// MARK: Display chooser
+/// Checkbox list of the connected displays, used by "Selected displays".
+struct DisplayChooser: View {
+    @ObservedObject var settings: SettingsManager
+    @State private var displays = DisplayManager.availableDisplays()
+
+    private func binding(for id: String) -> Binding<Bool> {
+        Binding<Bool>(
+            get: { settings.app.selectedDisplays.contains(id) },
+            set: { isOn in
+                var selection = settings.app.selectedDisplays
+                if isOn {
+                    if !selection.contains(id) { selection.append(id) }
+                } else {
+                    selection.removeAll { $0 == id }
+                }
+                settings.app.selectedDisplays = selection
+            }
+        )
+    }
+
+    private var hasConnectedSelection: Bool {
+        displays.contains { settings.app.selectedDisplays.contains($0.id) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(displays) { display in
+                Toggle(isOn: binding(for: display.id)) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(display.name)
+                        Text(display.detail).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.checkbox)
+            }
+            if !hasConnectedSelection {
+                Label("No connected display is selected, so nothing is shown.", systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption).foregroundStyle(.orange)
+            }
+        }
+        .padding(.leading, 4)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)) { _ in
+            displays = DisplayManager.availableDisplays()
         }
     }
 }
