@@ -1,12 +1,12 @@
 import Foundation
 
 enum AnimationStyle: String, Codable, CaseIterable, Identifiable {
-    case spikeWave, needleSpikes, audioWave, equalizer, ledMeter, heartbeat, lightning
+    case spikeWave, audioWave, helixWave, equalizer, ledMeter, heartbeat, lightning
     case particleBurst, energyPulse, minimalGlow
 
     var id: String { rawValue }
 
-    /// Unknown/removed styles in saved settings (e.g. the old Digital Rain) fall back to Spike Wave.
+    /// Unknown/removed styles in saved settings (e.g. the old Needle Spikes) fall back to Spike Wave.
     init(from decoder: Decoder) throws {
         let raw = try decoder.singleValueContainer().decode(String.self)
         self = AnimationStyle(rawValue: raw) ?? .spikeWave
@@ -15,8 +15,8 @@ enum AnimationStyle: String, Codable, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .spikeWave: return "Spike Wave"
-        case .needleSpikes: return "Needle Spikes"
         case .audioWave: return "Audio Wave"
+        case .helixWave: return "Helix Wave"
         case .equalizer: return "Equalizer"
         case .ledMeter: return "LED Meter"
         case .heartbeat: return "Heartbeat"
@@ -30,8 +30,8 @@ enum AnimationStyle: String, Codable, CaseIterable, Identifiable {
     var summary: String {
         switch self {
         case .spikeWave: return "Rounded spikes ripple outward from the center."
-        case .needleSpikes: return "Razor-sharp pointed needles in a tall-short rhythm."
         case .audioWave: return "A fluid waveform whose amplitude follows your typing."
+        case .helixWave: return "Two waveforms twist around each other like a double helix."
         case .equalizer: return "Independent bars that jump with each keystroke."
         case .ledMeter: return "Retro LED columns that light up like a VU meter."
         case .heartbeat: return "Each keystroke sends an ECG-style beat along one line."
@@ -45,8 +45,8 @@ enum AnimationStyle: String, Codable, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .spikeWave: return "waveform.path.ecg"
-        case .needleSpikes: return "arrow.up.and.down"
         case .audioWave: return "waveform"
+        case .helixWave: return "waveform.path"
         case .equalizer: return "chart.bar.fill"
         case .ledMeter: return "square.grid.3x3.fill"
         case .heartbeat: return "heart.fill"
@@ -60,8 +60,8 @@ enum AnimationStyle: String, Codable, CaseIterable, Identifiable {
     func makeRenderer() -> StyleRenderer {
         switch self {
         case .spikeWave: return SpikeWaveRenderer()
-        case .needleSpikes: return NeedleSpikesRenderer()
         case .audioWave: return AudioWaveRenderer()
+        case .helixWave: return HelixWaveRenderer()
         case .equalizer: return EqualizerRenderer()
         case .ledMeter: return LEDMeterRenderer()
         case .heartbeat: return HeartbeatRenderer()
